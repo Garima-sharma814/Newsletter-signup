@@ -2,7 +2,8 @@ const express = require("express");
 const bodyparser = require("body-parser");
 const https = require("https");
 const app = express();
-const port = 3000;
+
+// const port = 3000;
 const hostname = "127.0.0.1";
 
 app.use(express.static("public"));
@@ -19,7 +20,8 @@ app.post("/", (req, res) => {
   const data = {
     members: [
       {
-        email: email,
+        email_address: email,
+        status: "subscribed",
         merge_fields: {
           FNAME: fname,
           LNAME: lname,
@@ -28,16 +30,27 @@ app.post("/", (req, res) => {
     ],
   };
   const jsonData = JSON.stringify(data);
-  const url="https://us6.api.mailchimp.com/3.0/lists/23b14d2b05";
-  const options
-  https.request(url, options, (response)=>{
-
-  })
+  const url = "https://us6.api.mailchimp.com/3.0/lists/23b14d2b05";
+  const options = {
+    method: "POST",
+    auth: "garima08:35f5966b5c8c49cd05305509f1403908-us6",
+  };
+  const request = https.request(url, options, (response) => {
+    if(response.statusCode===200){
+      res.sendFile(__dirname+"/success.html");
+    }
+    else{
+      res.sendFile(__dirname+"/failure.html");
+    }
+    response.on("data", (data) => {
+      console.log(JSON.parse(data));
+    });
+  });
+  request.write(jsonData);
+  request.end();
 });
 
-app.listen(port, () => {
-  console.log(`the server us running at http://${hostname}:${port}/`);
-});
+app.listen(process.env.PORT, () => console.log(`Server is running at 3000`));
 
 //Api key
 //35f5966b5c8c49cd05305509f1403908-us6
